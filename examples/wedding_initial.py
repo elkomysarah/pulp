@@ -30,7 +30,7 @@ x = pulp.LpVariable.dicts('table', possible_tables,
                           upBound=1,
                           cat=pulp.LpInteger)
 
-seating_model = pulp.LpProblem("Wedding Seating Model", pulp.LpMinimize)
+seating_model = pulp.LpProblem("Wedding_Seating_Model", pulp.LpMinimize)
 
 seating_model += pulp.lpSum([happiness(table) * x[table] for table in possible_tables])
 
@@ -54,9 +54,11 @@ solution = {
 for k, v in solution.items():
     x[k].setInitialValue(v)
 
-solver = pulp.PULP_CBC_CMD(msg=1, mip_start=1)
-# solver = pulp.CPLEX_CMD(msg=1, mip_start=1)
-# solver = pulp.GUROBI_CMD(msg=1, mip_start=1)
+solver = pulp.PULP_CBC_CMD(msg=True, warmStart=True)
+# solver = pulp.CPLEX_CMD(msg=True, warmStart=True)
+# solver = pulp.GUROBI_CMD(msg=True, warmStart=True)
+# solver = pulp.CPLEX_PY(msg=True, warmStart=True)
+# solver = pulp.GUROBI(msg=True, warmStart=True)
 seating_model.solve(solver)
 
 

@@ -1,6 +1,7 @@
 # Utility functions
 import itertools
 import collections
+import re
 
 
 def isNumber(x):
@@ -224,3 +225,36 @@ def read_table(data, coerce_type, transpose=False):
                 key = (items[0], headings[i])
             result[key] = coerce_type(item)
     return result
+
+
+def arg_to_value(some_string):
+    if some_string[0] == "'" and some_string[-1] == "'":
+        return some_string[1:-1]
+    if some_string.isdigit():
+        return int(some_string)
+    # TODO: probably other edge cases, such as boolean.
+    try:
+        return float(some_string)
+    except ValueError:
+        return some_string
+
+
+def get_root_tuple(name: str):
+    try:
+        root, rest = name.split('_?\(', 1)
+    except ValueError:
+        root, rest = name.split('_', 1)
+        return root, arg_to_value(rest)
+    args = re.split(',_?', rest[:-1])
+    new_args = [arg_to_value(arg) for arg in args if arg != '']
+    return root, tuple(new_args)
+
+
+def group_variables_by_name(_vars):
+    __vars = dict()
+    for name, obj in _vars.items():
+        root, tup = get_root_tuple(name)
+        if root not in __vars:
+            __vars[root] = {}
+        __vars[root][tup] = obj
+    return __vars

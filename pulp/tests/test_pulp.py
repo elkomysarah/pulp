@@ -5,7 +5,7 @@ from pulp.constants import PulpError
 from pulp.apis import *
 from pulp import LpVariable, LpProblem, lpSum, LpConstraintVar, LpFractionConstraint
 from pulp import constants as const
-from pulp.utilities import makeDict
+from pulp.utilities import makeDict, group_variables_by_name
 import unittest
 
 
@@ -736,6 +736,25 @@ class PuLPTest(unittest.TestCase):
         x, y, z, w = [var1[name] for name in ['x', 'y', 'z', 'w']]
         print("\t Testing maximize continuous LP solution")
         pulpTestCheck(prob1, self.solver, [const.LpStatusOptimal], {x: 4, y: 1, z: 8, w: 0})
+
+    def test_export_pb_vars(self):
+        prob = LpProblem("test_export_dict_max", const.LpMaximize)
+        x = LpVariable("x", 0, 4)
+        y = LpVariable("y", -1, 1)
+        z = LpVariable("z", 0)
+        w = LpVariable("w", 0)
+        prob += x + 4 * y + 9 * z, "obj"
+        prob += x + y <= 5, "c1"
+        prob += x + z >= 10, "c2"
+        prob += -y + z == 7, "c3"
+        prob += w >= 0, "c4"
+        data = prob.to_dict()
+        var1, prob1 = LpProblem.from_dict(data)
+        group_variables_by_name(var1)
+        x, y, z, w = [var1[name] for name in ['x', 'y', 'z', 'w']]
+        print("\t Testing maximize continuous LP solution")
+        pulpTestCheck(prob1, self.solver, [const.LpStatusOptimal], {x: 4, y: 1, z: 8, w: 0})
+
 
     def test_export_solver_dict_LP(self):
         prob = LpProblem("test_export_dict_LP", const.LpMinimize)
